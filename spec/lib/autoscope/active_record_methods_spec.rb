@@ -28,7 +28,7 @@ module Autoscope
         scope :two_param_scope, lambda { |id1,id2|
           where(['id IN (?)', [id1, id2]])
         }
-        scope :no_param_scope, -> { where('x = 1') }
+        scope :no_param_scope, where('x = 1')
         scope :empty_lambda_scope, lambda{ where(['date > ?', Date.today])}
         scope :optional_arg_scope, lambda{|a, b = 5|}
 
@@ -61,7 +61,7 @@ module Autoscope
 
       it 'adds all types of scopes to the supplied collection' do
 
-        scope = Post.all
+        scope = Post.scoped
 
         scope.expects(:user_id_scope)
           .with('1')
@@ -132,7 +132,7 @@ module Autoscope
 
         it 'adds pagination' do
 
-          scope = Post.all
+          scope = Post.scoped
 
           scope.expects(:paginate)
             .with(page: 3, per_page: 20)

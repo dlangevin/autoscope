@@ -12,6 +12,8 @@ lib/bundler/man
 pkg
 rdoc
 spec/reports
+spec/dummy/**/*.sqlite3
+spec/dummy/**/*.log
 test/tmp
 test/version_tmp
 tmp

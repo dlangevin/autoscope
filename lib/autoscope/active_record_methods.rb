@@ -118,22 +118,11 @@ module Autoscope
           next if params[scope_name].blank?
 
           # now apply the arguments
-          args_to_pass = []
-
-          # arg def tells us which args are required
-          arg_def.each_pair do |arg_name, arg_type|
-            case arg_type.to_sym
-            # this argument is required
-            when :req
-              args_to_pass << params[scope_name][arg_name]
-            when :opt
-              unless params[scope_name][arg_name].nil?
-                args_to_pass << params[scope_name][arg_name]
-              end
-            when :rest
-              args_to_pass.concat(params[scope_name][arg_name] || [])
-            end
-          end
+          args_to_pass = self.get_dynamic_scope_args(
+            scope_name,
+            arg_def,
+            params[scope_name]
+          )
 
           # actually apply the scope
           scope = scope.send(scope_name, *args_to_pass)
@@ -158,6 +147,33 @@ module Autoscope
           )
         end
         return scope
+      end
+
+      #
+      # Get the appropriate args from dynamic scopes
+      #
+      # @param  scope_name [String, Symbol]
+      # @param  arg_def [Hash{Symbol, Symbol}] Proc args definition
+      # @param  params [Hash] Relevant params
+      #
+      # @return [Array] Array of args to send to the scope
+      def get_dynamic_scope_args(scope_name, arg_def, params)
+        [].tap do |ret|
+          # arg def tells us which args are required
+          arg_def.each_pair do |arg_name, arg_type|
+            case arg_type.to_sym
+              # this argument is required
+              when :req
+                ret << params[arg_name]
+              when :opt
+                unless params[arg_name].nil?
+                  ret << params[arg_name]
+                end
+              when :rest
+                ret.concat(Array.wrap(params[arg_name]))
+            end
+          end
+        end
       end
 
       #
