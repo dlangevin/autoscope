@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 gemspec
 
 # for our dummy app and specs
+gem "codeclimate-test-reporter", group: :test, require: nil
 gem 'guard-bundler'
 gem 'guard-rspec'
 gem 'mocha', require: false
