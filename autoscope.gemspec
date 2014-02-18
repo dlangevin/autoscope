@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Autoscope::VERSION
   spec.authors       = ["Dan Langevin"]
   spec.email         = ["dan.langevin@lifebooker.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Automatically apply scopes to a model}
+  spec.summary       = %q{Automatically apply scopes to a model}
   spec.homepage      = ""
   spec.license       = "MIT"
 
