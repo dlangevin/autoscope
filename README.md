@@ -1,5 +1,11 @@
 # Autoscope
 
+[![Build Status](https://travis-ci.org/dlangevin/autoscope.png?branch=master)](https://travis-ci.org/dlangevin/autoscope)
+
+[![Code Climate](https://codeclimate.com/repos/53035ea369568029d4003926/badges/6d471a858ab8114d9cc7/gpa.png)](https://codeclimate.com/repos/53035ea369568029d4003926/feed)
+
+[![Code Climate](https://codeclimate.com/repos/53035ea369568029d4003926/badges/6d471a858ab8114d9cc7/coverage.png)](https://codeclimate.com/repos/53035ea369568029d4003926/feed)
+
 Apply scopes to any model based on params from a controller
 
 ## Installation
