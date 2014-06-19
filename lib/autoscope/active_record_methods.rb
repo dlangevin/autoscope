@@ -5,8 +5,11 @@ module Autoscope
 
     included do |klass|
 
-      klass.class_attribute :scope_definition
-      klass.scope_definition = {}
+      klass.class_attribute :stored_scope_definition
+      klass.stored_scope_definition = {}
+
+      klass.class_attribute :scope_class_methods
+      klass.scope_class_methods = []
 
       # add scope protection behavior
       class << klass
@@ -42,6 +45,18 @@ module Autoscope
         scope = self.add_dynamic_scopes(params, scope)
         scope = self.add_pagination(params, scope)
         scope
+      end
+
+      #
+      # Scope definition
+      #
+      # @return [Hash] Definition
+      def scope_definition
+        self.stored_scope_definition.clone.tap do |ret|
+          self.scope_class_methods.each do |meth|
+            ret[meth] = self.get_scope_parameters(self.method(meth))
+          end
+        end
       end
 
       protected
@@ -192,6 +207,18 @@ module Autoscope
       end
 
       #
+      # Method to denote that we have class methods of
+      # that are really scopes
+      #
+      # @param *scopes [Array<Symbol,String>]
+      #
+      # @return [Array<Symbol>]
+      def has_scopes(*scopes)
+        self.scope_class_methods = self.scope_class_methods +
+          Array.wrap(scopes).map(&:to_sym)
+      end
+
+      #
       # Set up a regular scope, but mark it as protected
       # (not visible via the api)
       #
@@ -205,24 +232,24 @@ module Autoscope
       #
       # set up a regular scope, making it visibule to the API
       #
-      def scope_with_resource_definition_addition(name, scope_options = {}, &block)
+      def scope_with_resource_definition_addition(name, opts = {}, &block)
         # if it's a proc, we figure out its parameters
-        params = if scope_options.is_a?(Proc)
-          self.get_scope_parameters(scope_options)
+        params = if opts.is_a?(Proc)
+          self.get_scope_parameters(opts)
         # otherwise we just use a blank hash
         else
           {}
         end
 
         # update scope definition
-        self.scope_definition.merge!(
+        self.stored_scope_definition = self.stored_scope_definition.merge(
           name.to_sym => params
         )
 
         # call the original scope definition method
         self.scope_without_resource_definition_addition(
           name,
-          scope_options,
+          opts,
           &block
         )
       end
@@ -232,7 +259,7 @@ module Autoscope
       #
       # @return [Hash<Symbol, Hash>]
       def dynamic_scopes
-        scopes = self.scope_definition.select { |k, v| v.present? }
+        self.scope_definition.select { |_k, v| v.present? }
       end
 
       #
@@ -241,7 +268,7 @@ module Autoscope
       # @return [Array<Hash>]
       def static_scopes
         scopes = self.scope_definition
-          .select { |k, v| v.blank? }
+          .select { |_k, v| v.blank? }
           .keys
         scopes | [:first, :last, :all]
       end

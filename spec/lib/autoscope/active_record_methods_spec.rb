@@ -19,20 +19,20 @@ module Autoscope
 
       Post.class_eval do
 
-        scope :user_id_scope, lambda { |user_id|
+        scope :user_id_scope, -> user_id {
           where(user_id: user_id)
         }
-        scope :vararg_scope, lambda { |*ids|
+        scope :vararg_scope, -> *ids {
           where(['id IN (?)', args.flatten])
         }
-        scope :two_param_scope, lambda { |id1,id2|
+        scope :two_param_scope, -> id1, id2 {
           where(['id IN (?)', [id1, id2]])
         }
-        scope :no_param_scope, where('x = 1')
-        scope :empty_lambda_scope, lambda{ where(['date > ?', Date.today])}
-        scope :optional_arg_scope, lambda{|a, b = 5|}
+        scope :no_param_scope, -> { where('x = 1') }
+        scope :empty_lambda_scope, -> { where(['date > ?', Date.today]) }
+        scope :optional_arg_scope, -> a, b = 5 { }
 
-        protected_scope :nonsense, lambda{|id, test| where(user_id: id)}
+        protected_scope :nonsense, -> id, test { where(user_id: id) }
 
       end
 
@@ -59,9 +59,14 @@ module Autoscope
 
     context '.add_scopes' do
 
+      it 'does not include scopes from other classes in its definition' do
+        expect(User.scope_definition.keys).to eql([:by_name])
+      end
+
+
       it 'adds all types of scopes to the supplied collection' do
 
-        scope = Post.scoped
+        scope = Post.all
 
         scope.expects(:user_id_scope)
           .with('1')
@@ -126,13 +131,36 @@ module Autoscope
 
       end
 
+      context '.register_scopes' do
+
+        before :all do
+          Post.class_eval do
+
+            has_scopes :blah
+
+            def self.blah
+              where(user_id: 1)
+            end
+          end
+        end
+
+        it 'registers a class method as a scope' do
+          expect(Post.scope_definition.keys).to include :blah
+        end
+
+        it 'constructs the proper query' do
+          expect(Post.blah).to eq(Post.add_scopes(blah: true))
+        end
+
+      end
+
 
 
       context 'Pagination' do
 
         it 'adds pagination' do
 
-          scope = Post.scoped
+          scope = Post.all
 
           scope.expects(:paginate)
             .with(page: 3, per_page: 20)
