@@ -19,6 +19,10 @@ module Autoscope
 
       Post.class_eval do
 
+        scope :blank_arg_scope, -> user_id {
+          where(user_id: user_id)
+        }
+
         scope :user_id_scope, -> user_id {
           where(user_id: user_id)
         }
@@ -84,15 +88,18 @@ module Autoscope
           .with('req')
           .returns(scope)
 
+        scope.expects(:blank_arg_scope).never
+
         Post.add_scopes(
           {
+            blank_arg_scope: { user_id: '' },
             user_id_scope: { user_id: '1' },
             two_param_scope: {
               id1: '1',
               id2: '2'
             },
             vararg_scope: { ids: %w{1 2 3} },
-            optional_arg_scope: { a: 'req' }
+            optional_arg_scope: { a: 'req' },
           },
           scope
         )
