@@ -130,7 +130,7 @@ module Autoscope
         scope.klass.dynamic_scopes.each_pair do |scope_name, arg_def|
 
           # skip scopes that are not defined
-          next if params[scope_name].blank?
+          next if self.blank_param?(params[scope_name])
 
           # now apply the arguments
           args_to_pass = self.get_dynamic_scope_args(
@@ -162,6 +162,16 @@ module Autoscope
           )
         end
         return scope
+      end
+
+      #
+      # Is this data blank?
+      #
+      # @param data [String, Hash]
+      #
+      # @return [Boolean]
+      def blank_param?(data)
+        data.blank? || data.try(:values).try(:all?, &:blank?)
       end
 
       #
